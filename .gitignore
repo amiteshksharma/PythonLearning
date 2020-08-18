@@ -1,5 +1,6 @@
 
 bashsource.ps1
+.bash-source
 *.txt
 
 # Byte-compiled / optimized / DLL files
