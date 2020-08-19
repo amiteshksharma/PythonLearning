@@ -7,6 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import warnings
 import re
+import operator
 warnings.filterwarnings('ignore')
 nltk.download('averaged_perceptron_tagger', quiet=True)
 nltk.download('punkt', quiet=True)
@@ -44,7 +45,7 @@ data_embeddings = {key: value for key, value in embeddings_index.items() if key 
 # Processing the query
 def process(query):
     if query not in embeddings_index:
-        return 'Value not in Embed'
+        return '404'
     query_embed = embeddings_index[query]
     scores = {}
     for word, embed in data_embeddings.items():
@@ -63,8 +64,8 @@ def auth():
 
 def create_url():
     query = "Amitesh2001"
-    tweet_fields = 1
-    url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name={}&count={}&tweet_mode={}".format(query, tweet_fields, "extended")
+    tweet_fields = 20
+    url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name={}&count={}&tweet_mode={}&trim_user={}".format(query, tweet_fields, "extended", True)
     return url
 
 def create_headers(bearer_token):
@@ -103,7 +104,7 @@ def create_dictionary():
 
     #Sort the dictionary to get the top words
     sort = sorted(dictionary.items(), key=lambda x:x[1], reverse=True)
-    # print(sort)
+    print(sort)
     return sort
 
 def tokenize_words():
@@ -131,31 +132,41 @@ def tokenize_words():
 def categorize_words():
     word_dict = {}
     for tweet in responses:
-        print(tweet.get('full_text'))
         word = tweet.get('full_text')
-        arr_words = word.split()
-        print(arr_words)
-        for words in arr_words:
-            if words.lower() in Pronouns:
-                continue
+        sort_word_into_category(word, word_dict)
 
-            if "https" in words:
-                continue
-            
-            regex = re.compile('[^a-zA-Z]')
-            words = regex.sub('', words)
+        if "quoted_status" in tweet:
+            retweet = tweet.get('quoted_status')['full_text']
+            sort_word_into_category(retweet, word_dict)
+ 
+    return word_dict
 
-            print(words)
-            process_word = process(words)
-            print(process_word)
-            
-            max = 'Vacation'
-            for categories in process_word:
-                print(categories)
-                
+def sort_word_into_category(word, word_dict):
+    arr_words = word.split()
+    for words in arr_words:
+        if words.lower() in Pronouns:
+            continue
+
+        if "https" in words:
+            continue
+        
+        regex = re.compile('[^a-zA-Z]')
+        words = regex.sub('', words)
+
+        process_word = process(words)
+        
+        if process_word == '404':
+            continue
+        else:
+            largest_value = max(process_word.items(), key=operator.itemgetter(1))[0]
+
+            if largest_value in word_dict:
+                word_dict[largest_value] = word_dict[largest_value] + 1
+            else:
+                word_dict[largest_value] = 1
             
 
 if __name__ == "__main__":
     create_dictionary()
     tokenize_words()
-    categorize_words()
+    print(categorize_words())
