@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import warnings
+import re
 warnings.filterwarnings('ignore')
 nltk.download('averaged_perceptron_tagger', quiet=True)
 nltk.download('punkt', quiet=True)
@@ -17,11 +18,14 @@ nltk.download('punkt', quiet=True)
 data = {
     'Names': ['john','jay','dan','nathan','bob', 'giannis', 'jokic', 'lebron', 'durant'],
     'Politics': ['Trump', 'democrats', 'liberal', 'usps', 'progressive', 'president', 'congress', 'judicial',
-    'court', 'supreme court'],
+    'court', 'supreme court', 'media', 'narrative'],
+    'Countries': ['America', 'USA', 'US', 'China', 'India', 'Honduras', 'France', 'Germany'],
     'Sports': ['basketball', 'soccer', 'football', 'hockey', 'ball', 'tennis', 'racket'],
-    'Vacation': ['tokyo','bejing','washington','mumbai', 'America', 'trip', 'vacation'],
-    'Gloomy': ['sad', 'struggling', 'depression', 'suicide', 'kms', 'hate', 'sucks'],   
+    'Vacation': ['world','flying','paradise','travel', 'America', 'trip', 'vacation'],
+    'Gloomy': ['sad', 'struggling', 'depression', 'suicide', 'kms', 'hate', 'sucks'], 
 }
+
+Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you']  
 
 categories = {word: key for key, words in data.items() for word in words}
 
@@ -39,19 +43,16 @@ data_embeddings = {key: value for key, value in embeddings_index.items() if key 
 
 # Processing the query
 def process(query):
-  query_embed = embeddings_index[query]
-  scores = {}
-  for word, embed in data_embeddings.items():
-    category = categories[word]
-    dist = query_embed.dot(embed)
-    dist /= len(data[category])
-    scores[category] = scores.get(category, 0) + dist
-  return scores
-
-# Testing
-print(process('pink'))
-print(process('frank'))
-print(process('moscow'))
+    if query not in embeddings_index:
+        return 'Value not in Embed'
+    query_embed = embeddings_index[query]
+    scores = {}
+    for word, embed in data_embeddings.items():
+        category = categories[word]
+        dist = query_embed.dot(embed)
+        dist /= len(data[category])
+        scores[category] = scores.get(category, 0) + dist
+    return scores
 
 ##################################
 #  Start of Twitter API Methods  #
@@ -62,8 +63,8 @@ def auth():
 
 def create_url():
     query = "Amitesh2001"
-    tweet_fields = 10
-    url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name={}&count={}".format(query, tweet_fields)
+    tweet_fields = 1
+    url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name={}&count={}&tweet_mode={}".format(query, tweet_fields, "extended")
     return url
 
 def create_headers(bearer_token):
@@ -92,7 +93,7 @@ responses = get_response()
 def create_dictionary():
     dictionary = {}
     for tweet in responses:
-        string = tweet.get("text")
+        string = tweet.get("full_text")
         split_string = string.split()
         for word in split_string:
             if word in dictionary:
@@ -105,11 +106,11 @@ def create_dictionary():
     # print(sort)
     return sort
 
-def toknize_words():
+def tokenize_words():
     # Create the sentence to tokenize and tag
     words = ''
     for tweet in responses:
-        words += tweet["text"] + " "
+        words += tweet["full_text"] + " "
         
     # Tokenize and then tag the text with nltk
     tokenize = nltk.word_tokenize(words)
@@ -127,6 +128,34 @@ def toknize_words():
             total_number[token[1]] = 1
     print(total_number)
 
+def categorize_words():
+    word_dict = {}
+    for tweet in responses:
+        print(tweet.get('full_text'))
+        word = tweet.get('full_text')
+        arr_words = word.split()
+        print(arr_words)
+        for words in arr_words:
+            if words.lower() in Pronouns:
+                continue
+
+            if "https" in words:
+                continue
+            
+            regex = re.compile('[^a-zA-Z]')
+            words = regex.sub('', words)
+
+            print(words)
+            process_word = process(words)
+            print(process_word)
+            
+            max = 'Vacation'
+            for categories in process_word:
+                print(categories)
+                
+            
+
 if __name__ == "__main__":
     create_dictionary()
-    toknize_words()
+    tokenize_words()
+    categorize_words()
