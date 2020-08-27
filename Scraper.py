@@ -59,6 +59,8 @@ def scrape_social_issues():
         social.append(item.text.lower())
     
     social.insert(0, "Social Justice")
+    social.append('blm')
+    social.append('BLM')
     driver.close()
     return social
 
@@ -73,15 +75,45 @@ def scrape_science():
     science.insert(0, "Science")
     driver.close()
     return science
+
+
+names = []
+
+def scrape_names(names):
+    driver = webdriver.Chrome()
+    driver.get("https://family.disney.com/articles/1000-most-popular-boy-names/")
+    all_ul = driver.find_elements_by_xpath("//body/div/div/article/div/main/ol/li")
+    for item in all_ul:
+        if len(names) > 450:
+            break
+        names.append(item.text.lower())
+    
+    names.insert(0, "Names")
+    driver.close()
+
+def scrape_names_two(names):
+    driver = webdriver.Chrome()
+    driver.get("https://www.whattoexpect.com/baby-names/list/top-baby-names-for-girls/")
+    girls_ul = driver.find_elements_by_xpath("//body/div/div/div[2]/div[2]/article/div[2]/section[2]/div[2]/div/div[2]/ol/li")
+    for item in girls_ul:
+        if len(names) > 900:
+            break
+        names.append(item.text.lower())
+    driver.close()
     
 def create_spreadsheet():
     workbook = xlsxwriter.Workbook('Words.xlsx')
     worksheet = workbook.add_worksheet()
 
+    scrape_names(names)
+    scrape_names_two(names)
+
     array = [scrape_prepositions(),
             scrape_sports(),
             scrape_social_issues(),
-            scrape_politics()]
+            scrape_politics(),
+            scrape_science(),
+            names]
 
     row = 0
 
@@ -89,3 +121,5 @@ def create_spreadsheet():
         worksheet.write_column(row, col, data)
 
     workbook.close()
+
+create_spreadsheet()

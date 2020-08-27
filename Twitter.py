@@ -4,14 +4,56 @@ import json
 import nltk
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from Scraper import scrape_prepositions, scrape_sports, scrape_politics, scrape_social_issues, scrape_science
+# from Scraper import scrape_prepositions, scrape_sports, scrape_politics, scrape_social_issues, scrape_science
 import numpy as np
 import warnings
 import re
 import operator
+import mysql.connector
 warnings.filterwarnings('ignore')
 nltk.download('averaged_perceptron_tagger', quiet=True)
 nltk.download('punkt', quiet=True)
+
+scrape_prepositions = []
+scrape_sports = []
+scrape_politics = []
+scrape_social_issues = []
+scrape_science = []
+scrape_names = []
+##################################
+#  Start of MySQL Database call  #
+##################################
+
+pswd = os.environ.get('PASSWORD')
+user = os.environ.get('USERNAME')
+table = os.environ.get('TABLE')
+host = os.environ.get('HOST')
+
+cnx = mysql.connector.connect(user=user, password=pswd, database=table, host=host)
+cursor = cnx.cursor()
+
+query = "SELECT * FROM words"
+
+cursor.execute(query)
+result = cursor.fetchall()
+for row in result:
+    if row[0] != '':
+        scrape_prepositions.append(row[0])
+
+    if row[1] != '':
+        scrape_sports.append(row[1])
+    
+    if row[2] != '':
+        scrape_social_issues.append(row[2])
+
+    if row[3] != '':
+        scrape_politics.append(row[3])
+
+    if row[4] != '':
+        scrape_science.append(row[4])
+    
+    if row[5] != '':
+        scrape_names.append(row[5])
 
 ##################################
 #  Start of Twitter API Methods  #
@@ -26,7 +68,7 @@ def create_headers(bearer_token):
 
 def create_url():
     query = "Amitesh2001"
-    tweet_fields = 20
+    tweet_fields = 200
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name={}&count={}&tweet_mode={}&trim_user={}".format(query, tweet_fields, "extended", True)
     return url
 
@@ -76,22 +118,22 @@ def get_trending():
 
 # Define categories to teach the machine how to categorize words
 data = {
-    'Names': ['john','jay','dan','nathan','bob', 'giannis', 'jokic', 'lebron', 'durant'],
-    'Politics': scrape_politics(),
-    'Athletics': scrape_sports(),
-    'Social Issues': scrape_social_issues(),
+    'Names': scrape_names,
+    'Politics': scrape_politics,
+    'Athletics': scrape_sports,
+    'Social Issues': scrape_social_issues,
     'Trendy': get_trending(),
-    'Science': scrape_science()
+    'Science': scrape_science
 }
 
-Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them']  
-Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip']
-Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is']
+Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me']  
+Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc']
+Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am']
 Questions = ['who', 'what', 'when', 'where', 'why', 'how']
 Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so']
+Alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
-
-Prepositions = scrape_prepositions()
+Prepositions = scrape_prepositions
 
 categories = {word: key for key, words in data.items() for word in words}
 
@@ -193,7 +235,7 @@ def sort_word_into_category(word, word_dict, data):
         words = words.lower()
         if words in Pronouns or words in Prepositions or \
         words in Acronyms or words in Verbs or "https" in words \
-        or words in Questions or words in Conjunctions:
+        or words in Questions or words in Conjunctions or words in Alphabet:
             continue
         
         regex = re.compile('[^a-zA-Z]')
