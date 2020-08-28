@@ -19,6 +19,8 @@ scrape_sports = []
 scrape_politics = []
 scrape_social_issues = []
 scrape_science = []
+scrape_contractions = []
+scrape_nature = []
 scrape_names = []
 ##################################
 #  Start of MySQL Database call  #
@@ -51,9 +53,15 @@ for row in result:
 
     if row[4] != '':
         scrape_science.append(row[4])
-    
+
     if row[5] != '':
-        scrape_names.append(row[5])
+        scrape_contractions.append(row[5])
+
+    if row[6] != '':
+        scrape_nature.append(row[6])
+    
+    if row[7] != '':
+        scrape_names.append(row[7])
 
 ##################################
 #  Start of Twitter API Methods  #
@@ -123,17 +131,21 @@ data = {
     'Athletics': scrape_sports,
     'Social Issues': scrape_social_issues,
     'Trendy': get_trending(),
-    'Science': scrape_science
+    'Science': scrape_science,
+    'Nature': scrape_nature
 }
 
-Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me']  
+Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me', 'him', 'her']  
 Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc']
 Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am']
 Questions = ['who', 'what', 'when', 'where', 'why', 'how']
-Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so']
+Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so', 'if']
 Alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+Possessive = ['my', 'our', 'your', 'his', 'her', 'its', 'their', 'mine', 'ours', 'yours', 'his', 'hers', 'its', 'theirs']
+Expletives = ['damn', 'fuck', 'fck', 'shit', 'crap', 'bitch', 'bish', 'bastard', 'dumb', 'dumbest', 'ass']
 
 Prepositions = scrape_prepositions
+Contractions = scrape_contractions
 
 categories = {word: key for key, words in data.items() for word in words}
 
@@ -215,7 +227,8 @@ def categorize_words():
         'Athletics': [],
         'Social Issues': [],
         'Trendy': [],
-        'Science': []
+        'Science': [],
+        'Nature': []
     }
 
     for tweet in responses:
@@ -233,13 +246,14 @@ def sort_word_into_category(word, word_dict, data):
     arr_words = word.split()
     for words in arr_words:
         words = words.lower()
-        if words in Pronouns or words in Prepositions or \
-        words in Acronyms or words in Verbs or "https" in words \
-        or words in Questions or words in Conjunctions or words in Alphabet:
-            continue
-        
         regex = re.compile('[^a-zA-Z]')
         words = regex.sub('', words)
+
+        if words in Pronouns or words in Prepositions or \
+        words in Acronyms or words in Verbs or "https" in words \
+        or words in Questions or words in Conjunctions or words in Alphabet \
+        or words in Possessive or words in Expletives or words in Contractions:
+            continue
 
         process_word = process(words)
         
@@ -257,6 +271,6 @@ def sort_word_into_category(word, word_dict, data):
             
 
 if __name__ == "__main__":
-    create_dictionary()
-    tokenize_words()
+    # create_dictionary()
+    # tokenize_words()
     print(categorize_words())

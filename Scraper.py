@@ -60,7 +60,6 @@ def scrape_social_issues():
     
     social.insert(0, "Social Justice")
     social.append('blm')
-    social.append('BLM')
     driver.close()
     return social
 
@@ -76,6 +75,39 @@ def scrape_science():
     driver.close()
     return science
 
+def scrape_contractions():
+    driver = webdriver.Chrome()
+    driver.get("https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions")
+    #mw-content-text > div.mw-parser-output > table.wikitable.sortable.jquery-tablesorter > tbody > tr:nth-child(1) > td:nth-child(1)
+    all_ul = driver.find_elements_by_xpath("//div/div/table/tbody/tr/td[1]")
+    contractions = []
+    regex = re.compile('[^a-zA-Z]')
+    for item in all_ul:
+        if len(item.text) == 0:
+            continue 
+        words = regex.sub('', item.text)
+        contractions.append(words.lower())    
+
+    contractions.insert(0, 'Contractions')
+    contractions_reduce = contractions[:-2]
+    driver.close()
+    return contractions_reduce
+
+def scrape_nature():
+    driver = webdriver.Chrome()
+    driver.get("https://myvocabulary.com/word-list/nature-vocabulary/")
+    all_ul = driver.find_elements_by_xpath("//tbody/tr/td[2]")
+    nature = []
+    for item in all_ul:
+        temp_arr = item.text.rstrip().split(' ')
+        for word in temp_arr:
+            regex = re.compile('[^a-zA-Z]')
+            word = regex.sub('', word)
+            nature.append(word.strip().lower())
+
+    nature.insert(0, 'Nature')
+    driver.close()
+    return nature    
 
 names = []
 
@@ -113,6 +145,8 @@ def create_spreadsheet():
             scrape_social_issues(),
             scrape_politics(),
             scrape_science(),
+            scrape_contractions(),
+            scrape_nature(),
             names]
 
     row = 0
