@@ -20,7 +20,6 @@ scrape_politics = []
 scrape_social_issues = []
 scrape_science = []
 scrape_contractions = []
-scrape_nature = []
 scrape_names = []
 ##################################
 #  Start of MySQL Database call  #
@@ -56,12 +55,9 @@ for row in result:
 
     if row[5] != '':
         scrape_contractions.append(row[5])
-
-    if row[6] != '':
-        scrape_nature.append(row[6])
     
-    if row[7] != '':
-        scrape_names.append(row[7])
+    if row[6] != '':
+        scrape_names.append(row[6])
 
 ##################################
 #  Start of Twitter API Methods  #
@@ -132,17 +128,17 @@ data = {
     'Social Issues': scrape_social_issues,
     'Trendy': get_trending(),
     'Science': scrape_science,
-    'Nature': scrape_nature
 }
 
-Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me', 'him', 'her']  
-Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc']
-Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am']
+Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me', 'him', 'her', 'this', 'that']  
+Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc', 'yo', 'ngl']
+Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am', 'do', 'does', 'can']
 Questions = ['who', 'what', 'when', 'where', 'why', 'how']
-Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so', 'if']
+Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so', 'if', 'no', 'not', 'be', 'while', 'then', 'next', 'first', 'second']
 Alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-Possessive = ['my', 'our', 'your', 'his', 'her', 'its', 'their', 'mine', 'ours', 'yours', 'his', 'hers', 'its', 'theirs']
-Expletives = ['damn', 'fuck', 'fck', 'shit', 'crap', 'bitch', 'bish', 'bastard', 'dumb', 'dumbest', 'ass']
+Possessive = ['my', 'our', 'your', 'his', 'her', 'its', 'their', 'mine', 'ours', 'yours', 'his', 'hers', 'its', 'theirs', 'ur']
+Expletives = ['damn', 'fuck', 'fck', 'shit', 'crap', 'bitch', 'bish', 'bastard', 'dumb', 'dumbest', 'ass', 'fucking', 'fucked']
+Prefixes = ['dr', 'mr', 'ms', 'mrs', 'miss', 'mister', 'doctor', 'proff', 'prof', 'professor', 'bro', 'dawg', 'man', 'girl', 'son', 'lady', 'boy', 'dude']
 
 Prepositions = scrape_prepositions
 Contractions = scrape_contractions
@@ -228,7 +224,6 @@ def categorize_words():
         'Social Issues': [],
         'Trendy': [],
         'Science': [],
-        'Nature': []
     }
 
     for tweet in responses:
@@ -240,6 +235,14 @@ def categorize_words():
             sort_word_into_category(retweet, word_dict, data)
  
     print(data)
+    text_file = open("Output.txt", "w")
+    text_file.write("Names: %s \n" % data.get('Names'))
+    text_file.write("Politics: %s \n" % data.get('Politics'))
+    text_file.write("Athletics: %s \n" % data.get('Athletics'))
+    text_file.write("Social Issues: %s \n" % data.get('Social Issues'))
+    text_file.write("Trendy: %s \n" % data.get('Trendy'))
+    text_file.write("Science: %s \n" % data.get('Science'))
+    text_file.close()
     return word_dict
 
 def sort_word_into_category(word, word_dict, data):
@@ -252,7 +255,8 @@ def sort_word_into_category(word, word_dict, data):
         if words in Pronouns or words in Prepositions or \
         words in Acronyms or words in Verbs or "https" in words \
         or words in Questions or words in Conjunctions or words in Alphabet \
-        or words in Possessive or words in Expletives or words in Contractions:
+        or words in Possessive or words in Expletives or words in Contractions \
+        or words in Prefixes:
             continue
 
         process_word = process(words)
@@ -267,7 +271,8 @@ def sort_word_into_category(word, word_dict, data):
             else:
                 word_dict[largest_value] = 1
             
-            data[largest_value].append(words)
+            if words not in data[largest_value]:
+                data[largest_value].append(words)
             
 
 if __name__ == "__main__":

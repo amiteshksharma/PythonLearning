@@ -65,13 +65,25 @@ def scrape_social_issues():
 
 def scrape_science():
     driver = webdriver.Chrome()
-    driver.get("https://reversedictionary.org/wordsfor/science")
-    all_ul = driver.find_elements_by_xpath("//div/div/div[2]/div[3]/a")
+    driver.get("https://myvocabulary.com/word-list/science-vocabulary/")
+    all_ul = driver.find_elements_by_xpath("//tbody/tr/td[2]")
     science = []
+    for item in all_ul:
+        temp_arr = item.text.rstrip().split(' ')
+        for word in temp_arr:
+            regex = re.compile('[^a-zA-Z]')
+            word = regex.sub('', word)
+            science.append(word.strip().lower())
+
+    science.insert(0, 'Science')
+    driver.close()
+
+    driver = webdriver.Chrome()
+    driver.get("https://myvocabulary.com/word-list/global-warming-vocabulary/")
+    all_ul = driver.find_elements_by_xpath("tbody/tr/td[2]")
     for item in all_ul:
         science.append(item.text.lower())
     
-    science.insert(0, "Science")
     driver.close()
     return science
 
@@ -92,22 +104,6 @@ def scrape_contractions():
     contractions_reduce = contractions[:-2]
     driver.close()
     return contractions_reduce
-
-def scrape_nature():
-    driver = webdriver.Chrome()
-    driver.get("https://myvocabulary.com/word-list/nature-vocabulary/")
-    all_ul = driver.find_elements_by_xpath("//tbody/tr/td[2]")
-    nature = []
-    for item in all_ul:
-        temp_arr = item.text.rstrip().split(' ')
-        for word in temp_arr:
-            regex = re.compile('[^a-zA-Z]')
-            word = regex.sub('', word)
-            nature.append(word.strip().lower())
-
-    nature.insert(0, 'Nature')
-    driver.close()
-    return nature    
 
 names = []
 
@@ -146,7 +142,6 @@ def create_spreadsheet():
             scrape_politics(),
             scrape_science(),
             scrape_contractions(),
-            scrape_nature(),
             names]
 
     row = 0
