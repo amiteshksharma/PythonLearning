@@ -131,8 +131,8 @@ data = {
 }
 
 Pronouns = ['i', "he", 'she', 'it', 'they', 'we', 'ours', 'you', 'a', 'an', 'the', 'im', "i'm", 'its', 'their', "it's", 'them', 'me', 'him', 'her', 'this', 'that']  
-Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc', 'yo', 'ngl']
-Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am', 'do', 'does', 'can']
+Acronyms = ['smh', 'lol', 'lmfao', 'ttyl', 'gtfoh', 'stfu', 'rofl', 'lmk', 'ily', 'nvm', 'pov', 'rip', 'ppl', 'rt', 'etc', 'jfc', 'yo', 'ngl', 'outta']
+Verbs = ['are', 'were', 'will', 'is', 'was', 'have', 'has', 'had', 'is', 'am', 'do', 'does', 'can', 'alright']
 Questions = ['who', 'what', 'when', 'where', 'why', 'how']
 Conjunctions = ['for', 'and', 'nor', 'but', 'or', 'yet', 'so', 'if', 'no', 'not', 'be', 'while', 'then', 'next', 'first', 'second']
 Alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
